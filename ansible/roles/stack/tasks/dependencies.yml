@@ -1,0 +1,5 @@
+---
+
+- pip:
+    name: psycopg2-binary
+    executable: pip3

@@ -1,0 +1,17 @@
+Terraform 
+
+1st) download credentials from service account (gcp) and put inside terraform/modules folder
+2nd) Replace project_id, service_account and ssh_public_key_filepath inside terraform/modules/var.tf. 
+3rd) Run terraform to provision resources on gcp 
+	terraform init 
+	terraform plan 
+	terraform apply 
+
+Note down the External IP ( from vm page). Put postgres external ip inside ansible/inventory under [db] group and webapp external ip inside ansible/inventory under [webapp] group.
+
+Modify ansible/ansible.cfg. Replace private_key_file
+
+Run ansible to configure first postgresql and then the webapp server and run the following commands from inside the ansible folder
+
+1) ansible-playbook -i inventory db.yml --tags "common,db"
+2) ansible-playbook -i inventory webapp.yml --tags "common,webapp"

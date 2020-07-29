@@ -1,0 +1,30 @@
+from flask import Flask
+import psycopg2
+
+app = Flask(__name__)
+
+@app.route('/')
+def hello():
+    try:
+        connect_str = "dbname='{{ postgresql_db }}' user='{{ postgresql_db_user }}' host='{% for host in groups['db'] %}{{host}}{% if not loop.last %},{% endif %}{% endfor %}'" + \
+                  "password='{{ postgresql_db_password }}'"
+    # use our connection values to establish a connection
+        conn = psycopg2.connect(connect_str)
+    # create a psycopg2 cursor that can execute queries
+        cursor = conn.cursor()
+    # run a SELECT statement - no data in there, but we can try it
+        cursor.execute("""SELECT * from {{ postgresql_db_table }}""")
+        conn.commit() # <--- makes sure the change is shown in the database
+        rows = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        return(rows[0])
+    except Exception as e:
+        return(e)
+
+
+if __name__ == '__main__':
+    app.run(
+        host = "0.0.0.0",
+        port = 80
+            )

@@ -1,0 +1,55 @@
+---
+
+- name: Create Web Group
+  group:
+    name: '{{webapp_user}}'
+    state: present
+
+- name: Creating Web User
+  user:
+    name: '{{webapp_user}}'
+    group: '{{webapp_group}}'
+    shell: /bin/bash
+    state: present
+
+- name: Ensure PostgreSQL Python libraries are installed.
+  apt:
+    name: "{{ postgresql_python_library }}"
+    state: present
+
+- name: Installing flask package
+  pip:
+    name: Flask==0.12.1
+    executable: pip3
+
+- name: Copy Webapp on the remote machine
+  template:
+    src: webapp.py.j2
+    dest: "{{webapp_dir}}/webapp.py"
+    mode: 0755
+    owner: '{{webapp_user}}'
+    group: '{{webapp_group}}'
+
+- name: Installing supervisor
+  apt:
+    name: supervisor
+    state: present
+    
+- name: Copy supervisord job file to remote
+  template:
+    src: supervisor.j2
+    dest: "{{ supervisord_configs_path }}/webapp.conf"
+    owner: "{{webapp_user}}"
+  notify: restart supervisor
+
+- name: Reread supervisor conf
+  command: supervisorctl reread
+  
+- name: Updadte supervisor conf
+  command: supervisorctl update
+
+- name: restart supervisor
+  service:
+    enabled: yes
+    name: supervisor
+    state: restarted

@@ -1,0 +1,12 @@
+---
+
+- name: Update and upgrade apt packages
+  become: true
+  apt:
+    upgrade: yes
+    update_cache: yes
+
+- name: Installing python3-pip.
+  apt:
+    name: python3-pip
+    state: present

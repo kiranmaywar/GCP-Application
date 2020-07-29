@@ -1,0 +1,7 @@
+---
+
+- hosts: db
+  remote_user: ubuntu
+  become: true
+  roles: 
+    - stack

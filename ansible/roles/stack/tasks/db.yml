@@ -1,0 +1,72 @@
+---
+
+- name: Ensure PostgreSQL packages are installed.
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ postgresql_packages }}"
+
+- name: start postgresql server
+  service:
+    enabled: yes
+    name: postgresql
+    state: started
+
+- name: Configure global settings.
+  lineinfile:
+    dest: "{{ postgresql_config_path }}/postgresql.conf"
+    regexp: "^# listen_addresses"
+    line: "listen_addresses = '*'"
+    state: "present"
+  notify: restart postgresql
+
+- name: Configure host based authentication (if entries are configured).
+  lineinfile:
+    dest: "{{ postgresql_config_path }}/pg_hba.conf"
+    regexp: "^host all  all  127.0.0.1/32  md5"
+    line: "host all  all  0.0.0.0/0  md5"
+    state: "present"
+  notify: restart postgresql
+
+- name: Ensure PostgreSQL databases are present.
+  postgresql_db:
+    name: "{{ postgresql_db }}"
+    state: present
+  become: true
+  become_user: postgres
+  notify: restart postgresql
+  
+- name: Create myapptable table in the database with 
+  postgresql_table:
+    db: "{{ postgresql_db }}"
+    table: "{{ postgresql_db_table }}"
+    columns: message char(20)
+  become: true
+  become_user: postgres
+  notify: restart postgresql
+
+- name: Create postgres user for my app
+  postgresql_user:
+    name: "{{ postgresql_db_user }}"
+    password: "{{ postgresql_db_password }}"
+  become: yes
+  become_user: postgres
+  notify: restart postgresql
+
+- name: Ensure we have access from the new user
+  become: yes
+  become_user: postgres
+  postgresql_privs:
+    db: "{{ postgresql_db }}"
+    role: "{{ postgresql_db_user }}"
+    objs: ALL_IN_SCHEMA
+    privs: SELECT,INSERT,UPDATE,DELETE
+
+
+- name: Insert data into table
+  postgresql_query:
+    db: "{{ postgresql_db }}"
+    query: INSERT INTO "{{ postgresql_db_table }}" (message) VALUES ('Hello World')
+  become: true
+  become_user: postgres
+  notify: restart postgresql

@@ -1,0 +1,22 @@
+---
+# Setup/install tasks.
+
+- name: Update & Upgrade 
+  include: common.yml
+  tags:
+    - common
+
+- name: Dependencies 
+  include: dependencies.yml
+  tags:
+    - db
+
+- name: Installing postgresql, Initializing database and Creating User
+  include: db.yml
+  tags:
+    - db
+
+- name: Python App
+  include: python.yml
+  tags:
+    - webapp

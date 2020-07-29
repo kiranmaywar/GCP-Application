@@ -1,0 +1,24 @@
+---
+# defaults file for postgresql
+
+# Variables for postgresql
+postgresql_version: "10"
+postgresql_config_path: "/etc/postgresql/{{ postgresql_version }}/main"
+postgresql_daemon: postgresql
+postgresql_db: myapp
+postgresql_db_table: myapptable
+postgresql_db_user: myappuser
+postgresql_db_password: supersecretpassword
+postgresql_packages:
+  - postgresql
+  - postgresql-contrib
+  - libpq-dev
+
+
+# Variable for webapp
+
+postgresql_python_library: python3-psycopg2
+webapp_dir: "/home/{{ webapp_user }}"
+webapp_user: "webapp"
+webapp_group: "webapp"
+supervisord_configs_path: /etc/supervisor/conf.d
